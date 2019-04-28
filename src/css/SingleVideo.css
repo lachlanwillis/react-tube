@@ -1,0 +1,17 @@
+.SingleVideo,
+.SingleVideo .card {
+	width: 100%;
+}
+
+.video {
+	display: contents;
+}
+
+.content {
+	padding: 7px 10px;
+}
+
+.header {
+	font-size: 14px;
+	line-height: 14px;
+}
