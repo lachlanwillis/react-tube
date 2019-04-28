@@ -5,6 +5,8 @@ import axios from 'axios';
 const url = 'https://my-json-server.typicode.com/Campstay/youtube-test/';
 
 class VideoCollection extends React.Component {
+	_isMounted = false;
+
 	constructor(props) {
 		super(props);
 
@@ -16,7 +18,9 @@ class VideoCollection extends React.Component {
 
 	getVideoList() {
 		axios.get(url + '/videos/').then(response => {
-			this.setState({ videos: response.data, isLoading: false });
+			if (this._isMounted) {
+				this.setState({ videos: response.data, isLoading: false });
+			}
 		});
 	}
 
@@ -38,6 +42,11 @@ class VideoCollection extends React.Component {
 
 	componentDidMount() {
 		this.getVideoList();
+		this._isMounted = true;
+	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
 	}
 
 	render() {
@@ -47,6 +56,9 @@ class VideoCollection extends React.Component {
 				style={{ margin: '0px' }}
 				data-testid="video-cont"
 			>
+				<span data-testid="collection-page" style={{ display: 'none' }}>
+					On collection page...
+				</span>
 				<div className="sixteen wide column">
 					<h2 className="ui header centered" data-testid="home-header">
 						Popular Videos

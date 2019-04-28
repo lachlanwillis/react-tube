@@ -6,6 +6,7 @@ import '../css/Sidebar.css';
 const url = 'https://my-json-server.typicode.com/Campstay/youtube-test/';
 
 class VideoCollection extends React.Component {
+	_isMounted = false;
 	constructor(props) {
 		super(props);
 
@@ -16,7 +17,9 @@ class VideoCollection extends React.Component {
 
 	getVideoList() {
 		axios.get(url + '/videos?id_ne=' + this.props.videoId).then(response => {
-			this.setState({ videos: response.data });
+			if (this._isMounted) {
+				this.setState({ videos: response.data });
+			}
 		});
 	}
 
@@ -40,6 +43,11 @@ class VideoCollection extends React.Component {
 
 	componentDidMount() {
 		this.getVideoList();
+		this._isMounted = true;
+	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
 	}
 
 	render() {

@@ -9,3 +9,9 @@
 .description {
 	margin-top: 20px;
 }
+
+.loading-text {
+	display: block;
+	width: 100%;
+	text-align: center;
+}

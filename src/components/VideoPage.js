@@ -13,6 +13,8 @@ import '../css/VideoPage.css';
 const url = 'https://my-json-server.typicode.com/Campstay/youtube-test/';
 
 class VideoPage extends React.Component {
+	_isMounted = false;
+
 	constructor(props) {
 		super(props);
 
@@ -20,7 +22,8 @@ class VideoPage extends React.Component {
 			videoData: [],
 			comments: [],
 			user: {},
-			isLoading: true
+			isLoading: true,
+			loadingComments: true
 		};
 	}
 
@@ -28,10 +31,14 @@ class VideoPage extends React.Component {
 		axios
 			.get(url + '/videos/' + this.props.match.params.id, {})
 			.then(response => {
-				this.setState({ videoData: response.data });
+				if (this._isMounted) {
+					this.setState({ videoData: response.data });
+				}
 
 				axios.get(url + '/users/' + response.data.userId, {}).then(response => {
-					this.setState({ user: response.data });
+					if (this._isMounted) {
+						this.setState({ user: response.data });
+					}
 				});
 
 				axios
@@ -39,16 +46,23 @@ class VideoPage extends React.Component {
 						params: { videoId: response.data.id, _sort: 'date', _order: 'desc' }
 					})
 					.then(response => {
-						this.setState({ comments: response.data });
+						if (this._isMounted) {
+							this.setState({
+								comments: response.data,
+								loadingComments: false
+							});
+						}
 					});
-				this.setState({ isLoading: false });
+				if (this._isMounted) {
+					this.setState({ isLoading: false });
+				}
 			});
 	}
 
 	listComments() {
 		const list = this.state.comments.map(comment => {
 			return (
-				<div className="comment" key={comment.id}>
+				<div className="comment" data-testid="single-comment" key={comment.id}>
 					<SingleComment data={comment} />
 				</div>
 			);
@@ -65,20 +79,28 @@ class VideoPage extends React.Component {
 
 	componentDidMount() {
 		this.getVideoData();
+		this._isMounted = true;
+	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
 	}
 
 	render() {
 		return (
 			<div className="VideoPage">
+				<span data-testid="video-page" style={{ display: 'none' }}>
+					On video page...
+				</span>
 				<Header />
 				{this.state.isLoading ? (
-					<div>Loading video...</div>
+					<div className="loading-text">Loading video...</div>
 				) : (
 					<div className="ui grid stackable" style={{ marginTop: '20px' }}>
 						<div className="one wide column" />
 						<div className="ten wide column">
 							<video width="100%" src={this.state.videoData.url} controls />
-							<h1>{this.state.videoData.title}</h1>
+							<h1 className="video-title">{this.state.videoData.title}</h1>
 							<span className="video-meta">
 								Uploaded by: {this.state.user.name} &#xb7;{' '}
 								{calculateSize(this.state.videoData.size)} MBs &#xb7;{' '}
@@ -95,7 +117,13 @@ class VideoPage extends React.Component {
 								<h3 className="ui header">
 									{this.state.comments.length} Comments
 								</h3>
-								{this.listComments()}
+								{this.state.isLoading ? (
+									<div>Loading comments...</div>
+								) : (
+									<div className="all-comments" data-testid="comment-cont">
+										{this.listComments()}
+									</div>
+								)}
 							</div>
 						</div>
 						<div className="four wide column">

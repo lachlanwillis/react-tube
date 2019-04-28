@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { render, within, cleanup, waitForElement } from 'react-testing-library';
 import 'jest-dom/extend-expect';
 import axiosMock from 'axios';
@@ -20,43 +21,51 @@ it('calls axios and returns video data (home page)', async () => {
 		}
 	});
 
-	const { getByTestId } = render(<VideoCollection />);
+	const { getByTestId } = render(
+		<BrowserRouter>
+			<VideoCollection />
+		</BrowserRouter>
+	);
 
 	const videoContainer = getByTestId('video-cont');
 	const allVideos = await waitForElement(() =>
 		within(videoContainer).getAllByTestId('SingleVideo')
 	);
-
-	setTimeout(() => {
-		expect(renderedComponent.find('SingleVideo').length).toEqual(3);
-		done();
-	}, 0);
 
 	expect(allVideos.length).toBe(3);
 	expect(axiosMock.get).toHaveBeenCalledTimes(4);
 });
 
+const match = {
+	params: {
+		id: 0
+	}
+};
+
 it('calls axios and returns single video data (video page)', async () => {
 	axiosMock.get.mockImplementation(url => {
 		if (url === baseURL + '/videos/') {
-			return Promise.resolve({ data: axiosResponse.videos });
-		} else {
+			return Promise.resolve({ data: axiosResponse.videos[0] });
+		} else if (url === baseURL + '/users/') {
 			return Promise.resolve({ data: axiosResponse.users[0] });
+		} else {
+			return Promise.resolve({ data: axiosResponse.comments.slice(0, 2) });
 		}
 	});
 
-	const { getByTestId } = render(<VideoCollection />);
-
-	const videoContainer = getByTestId('video-cont');
-	const allVideos = await waitForElement(() =>
-		within(videoContainer).getAllByTestId('SingleVideo')
+	const { getByTestId } = render(
+		<BrowserRouter>
+			<VideoPage match={match} />
+		</BrowserRouter>
 	);
 
-	setTimeout(() => {
-		expect(renderedComponent.find('SingleVideo').length).toEqual(3);
-		done();
-	}, 0);
+	const commentContainer = await waitForElement(() =>
+		getByTestId('comment-cont')
+	);
+	const allComments = await waitForElement(() =>
+		within(commentContainer).getAllByTestId('single-comment')
+	);
 
-	expect(allVideos.length).toBe(3);
-	expect(axiosMock.get).toHaveBeenCalledTimes(4);
+	expect(allComments.length).toBe(2);
+	expect(axiosMock.get).toHaveBeenCalledTimes(12);
 });
