@@ -1,6 +1,8 @@
 import React from 'react';
-import video from '../api/video';
+import axios from 'axios';
 import { formatDate } from '../utils/VideoUtils';
+
+const url = 'https://my-json-server.typicode.com/Campstay/youtube-test/';
 
 class SingleComment extends React.Component {
 	constructor(props) {
@@ -12,7 +14,7 @@ class SingleComment extends React.Component {
 	}
 
 	getUser(userId) {
-		video.get('/users/' + userId, {}).then(response => {
+		axios.get(url + '/users/' + userId, {}).then(response => {
 			this.setState({ user: response.data });
 		});
 	}

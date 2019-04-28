@@ -1,7 +1,9 @@
 import React from 'react';
 import SingleVideo from './SingleVideo';
-import video from '../api/video';
+import axios from 'axios';
 import '../css/Sidebar.css';
+
+const url = 'https://my-json-server.typicode.com/Campstay/youtube-test/';
 
 class VideoCollection extends React.Component {
 	constructor(props) {
@@ -13,7 +15,7 @@ class VideoCollection extends React.Component {
 	}
 
 	getVideoList() {
-		video.get('/videos?id_ne=' + this.props.videoId).then(response => {
+		axios.get(url + '/videos?id_ne=' + this.props.videoId).then(response => {
 			this.setState({ videos: response.data });
 		});
 	}
